@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import torch
 import cv2
 import numpy as np
+from datetime import datetime
 
 # 🔥 Allow Ultralytics model class for new PyTorch versions
 try:
@@ -45,6 +46,7 @@ async def predict(file: UploadFile = File(...)):
         for box in results.boxes:
             confidence = float(box.conf)
 
+            # Confidence threshold
             if confidence < 0.6:
                 continue
 
@@ -57,9 +59,15 @@ async def predict(file: UploadFile = File(...)):
                 "bbox": bbox
             })
 
+        # Timestamp only if weapon detected
+        detected_time = None
+        if len(detections) > 0:
+            detected_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         return {
             "total_detections": len(detections),
             "weapon_detected": len(detections) > 0,
+            "detected_at": detected_time,
             "detections": detections
         }
 
